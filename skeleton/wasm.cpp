@@ -1,13 +1,15 @@
 #ifndef LIBRW_SDL2
-#ifndef __EMSCRIPTEN__
-
+#ifdef __EMSCRIPTEN__
 #include <rw.h>
+#include <emscripten.h>
 #include "skeleton.h"
+
 
 using namespace sk;
 using namespace rw;
 
-#ifdef RW_OPENGL
+#ifdef RW_OPENGL 
+
 
 GLFWwindow *window;
 int keymap[GLFW_KEY_LAST+1];
@@ -138,7 +140,7 @@ initkeymap(void)
 	keymap[GLFW_KEY_RIGHT_SUPER] = KEY_NULL;
 	keymap[GLFW_KEY_MENU] = KEY_NULL;
 }
-
+float lastTime;
 static void KeyUp(int key) { EventHandler(KEYUP, &key); }
 static void KeyDown(int key) { EventHandler(KEYDOWN, &key); }
 
@@ -209,6 +211,18 @@ mousebtn(GLFWwindow *window, int button, int action, int mods)
 	EventHandler(MOUSEBTN, &ms);
 }
 
+void main_loop(){
+	if(!sk::globals.quit && !glfwWindowShouldClose(window)){
+		float currTime  = glfwGetTime()*1000;
+		float timeDelta = (currTime - lastTime)*0.001f;
+		glfwPollEvents();
+
+		EventHandler(IDLE, &timeDelta);
+
+		lastTime = currTime;
+	}
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -233,16 +247,8 @@ main(int argc, char *argv[])
 	glfwSetCursorPosCallback(window, mousemove);
 	glfwSetMouseButtonCallback(window, mousebtn);
 
-	float lastTime = glfwGetTime()*1000;
-	while(!sk::globals.quit && !glfwWindowShouldClose(window)){
-		float currTime  = glfwGetTime()*1000;
-		float timeDelta = (currTime - lastTime)*0.001f;
-		glfwPollEvents();
-
-		EventHandler(IDLE, &timeDelta);
-
-		lastTime = currTime;
-	}
+	lastTime = glfwGetTime()*1000;
+	emscripten_set_main_loop(main_loop,0,true);
 
 	EventHandler(RWTERMINATE, nil);
 

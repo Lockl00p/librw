@@ -1,6 +1,7 @@
 add_library(librw_skeleton
     glfw.cpp
     sdl2.cpp
+    wasm.cpp
     skeleton.cpp
     skeleton.h
     win.cpp
