@@ -1,5 +1,6 @@
 add_compile_definitions(__EMSCRIPTEN__)
-add_link_options(-sFULL_ES2)
+add_compile_definitions(RW_GL3 RW_GLES2)
+add_link_options(-sFULL_ES2 --use-port=contrib.glfw3)
 add_compile_options(--use-port=contrib.glfw3)
 if(HTML)
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
@@ -28,7 +29,7 @@ function(librw_platform_target TARGET)
                 set(TARGET_OUTPUT_NAME "${TARGET}")
             endif()
 
-            install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_OUTPUT_NAME}.html"
+            install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_OUTPUT_NAME}"
                 DESTINATION "${CMAKE_INSTALL_BINDIR}"
             )
         endif()
