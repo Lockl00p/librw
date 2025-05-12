@@ -27,7 +27,7 @@ void *gcn_fifo;
 int32 alphaFunc;
 float32 alphaRef;
 
-GXRModeObj vidmodes = [VIDEO_GetPrefferedMode(NULL), TVNtsc240Ds, TVNtsc240DsAa, TVNtsc240Int, TVNtsc240IntAa, TVNtsc480Int, 
+GXRModeObj vidmodes[] = [TVNtsc240Ds, TVNtsc240DsAa, TVNtsc240Int, TVNtsc240IntAa, TVNtsc480Int, 
 TVNtsc480IntDf, TVNtsc480IntAa, TVNtsc480Prog, TVNtsc480ProgSoft, TVNtsc480ProgAa, 
 TVMpal240Ds, TVMpal240DsAa, TVMpal240Int, TVMpal240IntAa, TVMpal480Int, 
 TVMpal480IntDf, TVMpal480IntAa, TVMpal480Prog, TVMpal480ProgSoft, TVMpal480ProgAa, 
@@ -168,155 +168,6 @@ static int startGCN(){
 
 }
 
-static int setVmode(int32 n)
-{
-    switch(n){
-        
-        case 0:
-            vidmode = VIDEO_GetPrefferedMode(NULL);
-        
-        case 1:
-            vidmode = TVNtsc240Ds;
-
-        case 2:
-            vidmode = TVNtsc240DsAa;
-
-        case 3:
-            vidmode = TVNtsc240Int;
-
-        case 4:
-            vidmode = TVNtsc240IntAa;
-
-        case 5:
-            vidmode = TVNtsc480Int;
-
-        case 6:
-            vidmode = TVNtsc480IntDf;
-
-        case 7:
-            vidmode = TVNtsc480IntAa;
-
-        case 8:
-            vidmode = TVNtsc480Prog;
-
-        case 9:
-            vidmode = TVNtsc480ProgSoft;
-
-        case 10:
-            vidmode = TVNtsc480ProgAa;
-
-        case 11:
-            vidmode = TVMpal240Ds;
-
-        case 12:
-            vidmode = TVMpal240DsAa;
-
-        case 13:
-            vidmode = TVMpal240Int;
-
-        case 14:
-            vidmode = TVMpal240IntAa;
-
-        case 15:
-            vidmode = TVMpal480Int;
-
-        case 16:
-            vidmode = TVMpal480IntDf;
-
-        case 17:
-            vidmode = TVMpal480IntAa;
-
-        case 18:
-            vidmode = TVMpal480Prog;
-
-        case 19:
-            vidmode = TVMpal480ProgSoft;
-
-        case 20:
-            vidmode = TVMpal480ProgAa;
-
-        case 21:
-            vidmode = TVPal264Ds;
-
-        case 22:
-            vidmode = TVPal264DsAa;
-
-        case 23:
-            vidmode = TVPal264Int;
-
-        case 24:
-            vidmode = TVPal264IntAa;
-
-        case 25:
-            vidmode = TVPal528Int;
-
-        case 26:
-            vidmode = TVPal528IntDf;
-
-        case 27:
-            vidmode = TVPal524IntAa;
-
-        case 28:
-            vidmode = TVPal576IntDfScale;
-
-        case 29:
-            vidmode = TVPal528Prog;
-
-        case 30:
-            vidmode = TVPal528ProgSoft;
-
-        case 31:
-            vidmode = TVPal524ProgAa;
-
-        case 32:
-            vidmode = TVPal576ProgScale;
-
-        case 33:
-            vidmode = TVEurgb60Hz240Ds;
-
-        case 34:
-            vidmode = TVEurgb60Hz240DsAa;
-
-        case 35:
-            vidmode = TVEurgb60Hz240Int;
-
-        case 36:
-            vidmode = TVEurgb60Hz240IntAa;
-
-        case 37:
-            vidmode = TVEurgb60Hz480Int;
-
-        case 38:
-            vidmode = TVEurgb60Hz480IntDf;
-
-        case 39:
-            vidmode = TVEurgb60Hz480IntAa;
-
-        case 40:
-            vidmode = TVEurgb60Hz480Prog;
-
-        case 41:
-            vidmode = TVEurgb60Hz480ProgSoft;
-
-        case 42:
-            vidmode = TVEurgb60Hz480ProgAa;
-
-        case 43:
-            vidmode = TVRgb480Prog;
-
-        case 44:
-            vidmode = TVRgb480ProgSoft;
-
-        default:
-            return 0;
-
-        
-        VIDEO_Configure(vidmode);
-        startGCN();
-        return 1
-    }
-}
-
 static int deviceSystemGCN(DeviceReq req, void *arg, int32 n){
 
     switch(rq){
@@ -355,6 +206,14 @@ static int deviceSystemGCN(DeviceReq req, void *arg, int32 n){
             //If you are reading this. It is a bad idea to change the video mode.
             //mode 0 will always be the prefered mode
 
+            if(n == 0){
+                vidmode = VIDEO_GetPrefferedMode(NULL);
+            } else if(n >= 46){ return 0;} 
+            else{
+                vidmode = &vidmodes[n-1];
+            }
+            VIDEO_Configure(vidmode);
+            startGCN();
             return setVmode(n);
         
         case DEVICEGETVIDEOMODEINFO:
@@ -462,7 +321,7 @@ static void setRenderState(int32 state, void *pvalue)
         if(rwStateCache.zwrite != value){
             rwStateCache.zwrite = value;
             if(enable && !rwStateCache.ztest){
-                // Have to switch on ztest so writing can work
+                // Have to switch on ztest so writing can work on gamecube too!
                 curGCNState.depthTest = GX_TRUE;
                 curGCNState.depthFunc = GX_ALWAYS;
             }
