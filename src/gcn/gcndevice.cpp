@@ -27,6 +27,18 @@ void *gcn_fifo;
 int32 alphaFunc;
 float32 alphaRef;
 
+GXRModeObj vidmodes = [VIDEO_GetPrefferedMode(NULL), TVNtsc240Ds, TVNtsc240DsAa, TVNtsc240Int, TVNtsc240IntAa, TVNtsc480Int, 
+TVNtsc480IntDf, TVNtsc480IntAa, TVNtsc480Prog, TVNtsc480ProgSoft, TVNtsc480ProgAa, 
+TVMpal240Ds, TVMpal240DsAa, TVMpal240Int, TVMpal240IntAa, TVMpal480Int, 
+TVMpal480IntDf, TVMpal480IntAa, TVMpal480Prog, TVMpal480ProgSoft, TVMpal480ProgAa, 
+TVPal264Ds, TVPal264DsAa, TVPal264Int, TVPal264IntAa, TVPal528Int, 
+TVPal528IntDf, TVPal524IntAa, TVPal576IntDfScale, TVPal528Prog, TVPal528ProgSoft, 
+TVPal524ProgAa, TVPal576ProgScale, TVEurgb60Hz240Ds, TVEurgb60Hz240DsAa, TVEurgb60Hz240Int, 
+TVEurgb60Hz240IntAa, TVEurgb60Hz480Int, TVEurgb60Hz480IntDf, TVEurgb60Hz480IntAa, TVEurgb60Hz480Prog, 
+TVEurgb60Hz480ProgSoft, TVEurgb60Hz480ProgAa, TVRgb480Prog, TVRgb480ProgSoft, TVRgb480ProgAa];
+
+
+
 struct RwRasterStateCache {
 	Raster *raster;
 	Texture::Addressing addressingU;
@@ -346,9 +358,12 @@ static int deviceSystemGCN(DeviceReq req, void *arg, int32 n){
             return setVmode(n);
         
         case DEVICEGETVIDEOMODEINFO:
+            if(n >= 46){
+                return 0;
+            }
             VideoMode *rwmode = (VideoMode*)arg;
-            rwmode->width = vidmode->fbwidth;
-            rwmode->height = vidmode->efbheight;
+            rwmode->width = vidmodes[n]->fbwidth;
+            rwmode->height = vidmodes[n]->efbheight;
             rwmode->depth = 1
             rwmode->flags = 0;
             return 1;
