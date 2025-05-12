@@ -45,6 +45,9 @@ enum AttribComponentSize{
     ATTRIB_COMP_SIZE_U16 = 2,
     ATTRIB_COMP_SIZE_U8 = 0,
 }
+struct EngineOpenParams{
+	uint8 videoMode = 0;
+};
 
 //These are the args to GX_SetVtxAttrFmt.
 //Minus the first one, as we're going to be mainly relying on the first VAT

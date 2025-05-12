@@ -109,26 +109,6 @@ static uint32 blendMap[] = {
     //We don't have an equivalent of GL_SRC_ALPHA_SATURATE on Gamecube.
 	GL_BL_ONE,
 };
-
-static int openGCN(EngineOpenParams *params)
-{
-	//Initialize the gamecube's video
-	VIDEO_INIT();
-	vidmode = VIDEO_GetPrefferedMode(NULL);
-	VIDEO_Configure(vidmode)
-	//An area of memory needs to be allocated as the FIFO for the GX chip
-	gcn_fifo = memalign(32,GX_FIFO_SIZE);
-	//Ensure that memory is empty to prevent weird stuff
-	memset(gcn_fifo,0,GX_FIFO_SIZE);
-
-	//Initialize the GX Chip
-	GX_Init(gcn_fifo,GX_FIFO_SIZE);
-
-	
-	
-	
-}
-
 static int startGCN(){
 
     //Set the Viewport. The first 2 arguments are the XY of the top left corner of the screen.
@@ -155,7 +135,7 @@ static int startGCN(){
 
 
 
-    //Here, we tell the GX chip that we're using 32 bit floats for vertices, and that we're doing x y z.
+    //Here, we tell the Flipper that we're using 32 bit floats for vertices, and that we're doing x y z.
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32);
 
 	//Here, we're telling it we're using regular ass RGB with a max of 255
@@ -167,6 +147,49 @@ static int startGCN(){
 	
 
 }
+uint8 setVidMode(uint8 n){
+    //if num is 0, that means we want the preferred mode
+    if(n == 0){
+        vidmode = VIDEO_GetPrefferedMode(NULL);
+    //We don't have more than 0-45 video modes so we will return 0 if they ask for an index too high
+    } else if(n >= 46){ return 0;} 
+    //We set the corresponding video mode.
+    else{
+        vidmode = &vidmodes[n-1];
+    }
+    //Actually tell the Flipper to set this video mode
+    VIDEO_Configure(vidmode);
+    //Reinitialize, as most things are set up with a specific video mode in mind.
+    startGCN();
+    return 1;
+}
+
+
+static int openGCN(EngineOpenParams *params)
+{
+	//Initialize the gamecube's video
+	VIDEO_INIT();
+	if(params->videoMode == 0){
+        vidmode = VIDEO_GetPrefferedMode(NULL);
+    } else if(params->videoMode >= 46){ return 0;} 
+    else{
+        vidmode = &vidmodes[n-1];
+    }
+    VIDEO_Configure(vidmode);
+	//An area of memory needs to be allocated as the FIFO for the Flipper
+	gcn_fifo = memalign(32,GX_FIFO_SIZE);
+	//Ensure that memory is empty to prevent weird stuff
+	memset(gcn_fifo,0,GX_FIFO_SIZE);
+
+	//Initialize the Flipper
+	GX_Init(gcn_fifo,GX_FIFO_SIZE);
+
+	return 1;
+	
+	
+}
+
+
 
 static int deviceSystemGCN(DeviceReq req, void *arg, int32 n){
 
@@ -205,16 +228,8 @@ static int deviceSystemGCN(DeviceReq req, void *arg, int32 n){
         case DEVICESETVIDEOMODE:
             //If you are reading this. It is a bad idea to change the video mode.
             //mode 0 will always be the prefered mode
-
-            if(n == 0){
-                vidmode = VIDEO_GetPrefferedMode(NULL);
-            } else if(n >= 46){ return 0;} 
-            else{
-                vidmode = &vidmodes[n-1];
-            }
-            VIDEO_Configure(vidmode);
-            startGCN();
-            return setVmode(n);
+            return setVidMode(n);
+            
         
         case DEVICEGETVIDEOMODEINFO:
             if(n >= 46){
