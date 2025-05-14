@@ -93,7 +93,13 @@ workspace "librw"
 		includedirs { path.join(_OPTIONS["glfwdir32"], "include") }
 	filter { "platforms:win-amd64-gl3" }
 		includedirs { path.join(_OPTIONS["glfwdir64"], "include") }
-
+	filter { "platforms:gcn" }
+		defines { "RW_GCN" }
+		toolset "gcc"
+		gccprefix 'powerpc-eabi-'
+		buildoptions { "-DGEKKO", "-mogc", "-mcpu=750", "-meabi", "-mhard-float"}
+		includedirs { "$(DEVKITPRO)/libogc/include"}
+		
 	filter "action:vs*"
 		buildoptions { "/wd4996", "/wd4244" }
 

@@ -22,6 +22,9 @@ namespace rw {
 namespace gcn {
 
 GXRModeObj *vidmode;
+//external framebuffer to copy to. Yes, this is double buffering
+static void *xfb[2] = {NULL,NULL};
+static uint8 curr_fb = 0;
 
 void *gcn_fifo;
 int32 alphaFunc;
@@ -111,6 +114,9 @@ static uint32 blendMap[] = {
 };
 static int startGCN(){
 
+    //This supposedly clears the z buffer. Might be useful to clear out random data
+    GX_SetCopyClear({0,0,0,0xff},0x00ffffff);
+
     //Set the Viewport. The first 2 arguments are the XY of the top left corner of the screen.
 	//Second 2 arguments are the width and height
 	//Last 2 are values to use for near and far depth scale.
@@ -175,11 +181,23 @@ static int openGCN(EngineOpenParams *params)
     else{
         vidmode = &vidmodes[n-1];
     }
-    VIDEO_Configure(vidmode);
+    //create both framebuffers. Not gonna say I understand this
+    xfb[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vidmode));
+    xfb[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vidmode));
+    
 	//An area of memory needs to be allocated as the FIFO for the Flipper
 	gcn_fifo = memalign(32,GX_FIFO_SIZE);
 	//Ensure that memory is empty to prevent weird stuff
 	memset(gcn_fifo,0,GX_FIFO_SIZE);
+
+    //Configure the GC to the videomode set
+    VIDEO_Configure(vidmode);
+    //Set the next framebuffer
+    VIDEO_SetNextFramebuffer(xfb[curr_fb]);
+
+    //Wait for the setup to finish
+    VIDEO_Flush();
+    VIDEO_WaitVSync();
 
 	//Initialize the Flipper
 	GX_Init(gcn_fifo,GX_FIFO_SIZE);
@@ -190,6 +208,21 @@ static int openGCN(EngineOpenParams *params)
 }
 
 
+static int finalizeGCN(void){
+    
+    return 1;
+}
+
+static int closeGCN(void){
+    //Attempt to clear out the framebuffers.
+    memset(xfb[0],0,sizeof(*xfb[0]));
+    memset(xfb[1],0,sizeof(*xfb[1]));
+
+    xfb[0] = NULL;
+    xfb[1] = NULL;
+    //obviously, after this, don't try to render stuff. It won't go well.
+    return 1;
+}
 
 static int deviceSystemGCN(DeviceReq req, void *arg, int32 n){
 
@@ -198,7 +231,8 @@ static int deviceSystemGCN(DeviceReq req, void *arg, int32 n){
             openGCN((EngineOpenParams*)arg);
 
         case DEVICECLOSE:
-            //I cannot close it without exiting.
+            //I will close this device by clearing out the framebuffers
+            closeGCN();
             return 1;
 
         case DEVICEINIT:
@@ -209,6 +243,7 @@ static int deviceSystemGCN(DeviceReq req, void *arg, int32 n){
             return 1
 
         case DEVICEFINALIZE:
+            finalizeGCN();
             return 1;
 
         case DEVICEGETNUMSUBSYSTEMS:
@@ -251,7 +286,7 @@ static int deviceSystemGCN(DeviceReq req, void *arg, int32 n){
             return 1;
         
         case DEVICESETMULTISAMPLINGLEVELS:
-            return 1;
+            return 0;
         
         default:
             assert(0 && "not implemented");
