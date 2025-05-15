@@ -43,7 +43,7 @@ workspace "librw"
 		platforms { "linux-x86-null", "linux-x86-gl3",
 		"linux-amd64-null", "linux-amd64-gl3",
 		"linux-arm-null", "linux-arm-gl3",
-		"ps2" }
+		"ps2","gcn" }
 		if _OPTIONS["gfxlib"] == "sdl2" then
 			includedirs { "/usr/include/SDL2" }
 		end
@@ -96,9 +96,9 @@ workspace "librw"
 	filter { "platforms:gcn" }
 		defines { "RW_GCN" }
 		toolset "gcc"
-		gccprefix 'powerpc-eabi-'
+		gccprefix '$(DEVKITPPC)/bin/powerpc-eabi-'
 		buildoptions { "-DGEKKO", "-mogc", "-mcpu=750", "-meabi", "-mhard-float"}
-		includedirs { "$(DEVKITPRO)/libogc/include"}
+		includedirs { "$(DEVKITPRO)/libogc/include", "$(DEVKITPPC)/powerpc-eabi/include/" }
 		
 	filter "action:vs*"
 		buildoptions { "/wd4996", "/wd4244" }
@@ -264,7 +264,7 @@ project "ps2test"
 	kind "ConsoleApp"
 	targetdir (Bindir)
 	vucode()
-	removeplatforms { "*gl3", "*d3d9", "*null" }
+	removeplatforms { "*gl3", "*d3d9", "*null", "gcn" }
 	targetextension '.elf'
 	includedirs { "." }
 	files { "tools/ps2test/*.cpp",
