@@ -1,49 +1,48 @@
+#include <gx.h>
+
 namespace rw{
 namespace gcn{
 
 void registerPlatformPlugins(void);
 
 extern Device renderdevice;
-//So as to prevent the need for including gx.h,
-//I will be setting these attribute types to the corresponding number
-//as opposed to the defined constant
 enum AttribType{
 
-    ATTRIB_POS = 9,
-    ATTRIB_NORMAL = 10,
-    ATTRIB_COLOR = 11,
-    ATTRIB_COLOR1 = 12,
-    ATTRIB_TEX0 = 13,
-    ATTRIB_TEX1 = 14,
-    ATTRIB_TEX2 = 15,
-    ATTRIB_TEX3 = 16,
-    ATTRIB_TEX4 = 17,
-    ATTRIB_TEX5 = 18,
-    ATTRIB_TEX6 = 19,
-    ATTRIB_TEX7 = 20,
+    ATTRIB_POS = GX_VA_POS,
+    ATTRIB_NORMAL = GX_VA_NRM,
+    ATTRIB_COLOR = GX_VA_CLR0,
+    ATTRIB_COLOR1 = GX_VA_CLR1,
+    ATTRIB_TEX0 = GX_VA_TEX0,
+    ATTRIB_TEX1 = GX_VA_TEX1,
+    ATTRIB_TEX2 = GX_VA_TEX2,
+    ATTRIB_TEX3 = GX_VA_TEX3,
+    ATTRIB_TEX4 = GX_VA_TEX4,
+    ATTRIB_TEX5 = GX_VA_TEX5,
+    ATTRIB_TEX6 = GX_VA_TEX6,
+    ATTRIB_TEX7 = GX_VA_TEX7,
 
 };
 
 enum AttribComponentType{
-    ATTRIB_COMP_RGB = 0,
-    ATTRIB_COMP_RGBA = 1,
-    ATTRIB_COMP_NRM_XYZ = 0,
-    ATTRIB_COMP_XY = 0,
-    ATTRIB_COMP_XYZ = 1,
+    ATTRIB_COMP_RGB = GX_CLR_RGB,
+    ATTRIB_COMP_RGBA = GX_CLI_RGBA,
+    ATTRIB_COMP_NRM_XYZ = GX_NRM_XYZ,
+    ATTRIB_COMP_XY = GX_POS_XY,
+    ATTRIB_COMP_XYZ = GX_POS_XYZ,
 };
 
 //Note that the name is misleading. But I don't have a better name
 enum AttribComponentSize{
-    ATTRIB_COMP_SIZE_F32 = 4,
-    ATTRIB_COMP_SIZE_RGB565 = 0,
-    ATTRIB_COMP_SIZE_RGB8 = 1,
-    ATTRIB_COMP_SIZE_RGBA4 = 3,
-    ATTRIB_COMP_SIZE_RGBA8 = 5,
-    ATTRIB_COMP_SIZE_RGBX8 = 2,
-    ATTRIB_COMP_SIZE_S16 = 3,
-    ATTRIB_COMP_SIZE_S8 = 1,
-    ATTRIB_COMP_SIZE_U16 = 2,
-    ATTRIB_COMP_SIZE_U8 = 0,
+    ATTRIB_COMP_SIZE_F32 = GX_F32,
+    ATTRIB_COMP_SIZE_RGB565 = GX_RGB565,
+    ATTRIB_COMP_SIZE_RGB8 = GX_RGB8,
+    ATTRIB_COMP_SIZE_RGBA4 = GX_RGBA4,
+    ATTRIB_COMP_SIZE_RGBA8 = GX_RGBA8,
+    ATTRIB_COMP_SIZE_RGBX8 = GX_RGBX8,
+    ATTRIB_COMP_SIZE_S16 = GX_S16,
+    ATTRIB_COMP_SIZE_S8 = GX_S8,
+    ATTRIB_COMP_SIZE_U16 = GX_U16,
+    ATTRIB_COMP_SIZE_U8 = GX_U8,
 }
 struct EngineOpenParams{
 	uint8 videoMode = 0;
@@ -138,6 +137,29 @@ struct Im2DVertex
 	float getV(void) { return this->v; }
 };
 void setAttribs(AttribDesc *attribDescs, int32 numAttribs);
+
+//Normally, this would just be GXTexObj, but for some reason
+//the program cannot access the attributes of the texture object
+//so I have to esssentially put all these attributes here.
+struct gcnRaster
+{
+	//And my previous setup ended up useless cause I need gx.h to get a GXTexObj. Fuck me.
+	GXTexObj* textureObject;
+	//This holds a pointer to the 32-bit aligned image data. 
+	void* texture;
+	//The maximum value is 1024. 11 bits is all we need.
+	uint16 width : 11;
+	uint16 height : 11;
+
+	uint8 format;
+	//texture coord wrapping strategy in the S direction... whatever that means
+	uint8 s_wrap;
+	//THERES A T DIRECTION?
+	uint8 t_wrap;
+	//This is whether trilinear filtering will be used
+	uint8 mipmap;
+};
+
 
 }
 }

@@ -21,11 +21,6 @@
 namespace rw {
 namespace gcn {
 
-
-
-
-
-
 static void*
 driverOpen(void *o, int32, int32)
 {
