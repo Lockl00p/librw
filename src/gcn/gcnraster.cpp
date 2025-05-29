@@ -46,16 +46,16 @@ Raster* rasterCreate(Raster *raster)
 	switch(raster->type){
 		case Raster::NORMAL:
 		case Raster::TEXTURE:
-			ret = rasterCreateTexture(raster);
+			rst = rasterCreateTexture(raster);
 			break;
 		case Raster::CAMERATEXTURE:
-			ret = rasterCreateCameraTexture(raster);
+			rst = rasterCreateCameraTexture(raster);
 			break;
 		case Raster::ZBUFFER:
-			ret = rasterCreateZbuffer(raster);
+			rst = rasterCreateZbuffer(raster);
 			break;
 		case Raster::CAMERA:
-			ret = rasterCreateCamera(raster);
+			rst = rasterCreateCamera(raster);
 			break;
 
 		default:
