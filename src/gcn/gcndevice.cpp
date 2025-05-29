@@ -405,7 +405,7 @@ static void setRenderState(int32 state, void *pvalue)
             }
 		}
 		break;
-
+    //No clue what to do with this
 	case ALPHATESTFUNC:
 		if(rwStateCache.alphaFunc != value){
             rwStateCache.alphaFunc = value;
@@ -413,6 +413,7 @@ static void setRenderState(int32 state, void *pvalue)
         }
 	}
 		break;
+    //Or this    
 	case ALPHATESTREF:
 		if(alphaRef != value/255.0f){
 			alphaRef = value/255.0f;

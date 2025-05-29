@@ -143,6 +143,7 @@ void setAttribs(AttribDesc *attribDescs, int32 numAttribs);
 //so I have to esssentially put all these attributes here.
 struct gcnRaster
 {
+
 	//And my previous setup ended up useless cause I need gx.h to get a GXTexObj. Fuck me.
 	GXTexObj* textureObject;
 	//This holds a pointer to the 32-bit aligned image data. 
@@ -151,6 +152,7 @@ struct gcnRaster
 	uint16 width : 11;
 	uint16 height : 11;
 
+	
 	uint8 format;
 	//texture coord wrapping strategy in the S direction... whatever that means
 	uint8 s_wrap;
@@ -158,8 +160,16 @@ struct gcnRaster
 	uint8 t_wrap;
 	//This is whether trilinear filtering will be used
 	uint8 mipmap;
+
+	//The texmap number. Essentially the texture id. You can create more than 8 textures
+	//But only 8 textures can be applied to a surface at once, and many altercations done rely on this ID.
+	uint8 texid;
+
 };
 
+//A lot of stuff I don't understand. like why do this?
+extern int32 nativeRasterOffset;
+#define GETGCNRASTEREXT(raster) PLUGINOFFSET(rw::gcn::gcnRaster, raster rw::gcn::nativeRasterOffset)
 
 }
 }
